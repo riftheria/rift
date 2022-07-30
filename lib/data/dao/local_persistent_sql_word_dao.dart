@@ -13,10 +13,13 @@ class LocalPersistentWordDao extends DatabaseAccessor<RiftDatabase>
     return select(words).get();
   }
 
-  Future<void> insertAll(List<String> newWords) async {
-    for (String word in newWords) {
-      into(words).insert(WordsCompanion.insert(word: word));
-    }
+  @override
+  Future<void> insertAll(List<Word> newWords) async {
+    await batch(
+      (batch) => {
+        batch.insertAll(words, newWords),
+      },
+    );
   }
 
   @override
@@ -30,5 +33,13 @@ class LocalPersistentWordDao extends DatabaseAccessor<RiftDatabase>
           ..where((tbl) => tbl.word.equals(word)))
         .getSingleOrNull();
     return queryWord;
+  }
+
+  @override
+  Future<List<Word>> findAll(List<String> queryWords) async {
+    final foundWords = await (select(words)
+          ..where((table) => table.word.isIn(queryWords)))
+        .get();
+    return foundWords;
   }
 }

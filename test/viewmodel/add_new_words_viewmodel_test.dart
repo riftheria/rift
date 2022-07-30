@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +9,7 @@ import 'package:rift/data/rift_database.dart';
 import 'package:rift/viewmodel/word_viewmodel.dart';
 
 void main() {
+  registerFallbackValue(MockFile());
   test('User enters a new word and it is notified', () async {
     const wordValue = 'Word';
     final mockWordRepository = MockWordRepository();
@@ -51,6 +54,23 @@ void main() {
     expect(container.read(addedWordsMessageProvider),
         'The word you\'re trying to add is invalid');
   });
+
+  test('Add words by file and show valid and invalid words count', () async {
+    final mockWordRepository = MockWordRepository();
+    final container = ProviderContainer(overrides: [
+      wordRepositoryProvider.overrideWithValue(mockWordRepository)
+    ]);
+
+    when(() => mockWordRepository.importWordsFromFile(any())).thenAnswer(
+        (invocation) => Future(() => ImportedWords(
+            validWords: ['First', 'Second', 'Line'],
+            invalidWords: ['iftgfs'])));
+    await container
+        .read(wordViewModelProvider)
+        .addToKnownWordsFromFile(MockFile());
+    expect(container.read(addedWordsMessageProvider),
+        '3 words added, 1 word not added');
+  });
 }
 
 int timesGetWordHaveBeenCalled = 0;
@@ -64,3 +84,5 @@ Word? getWord(String wordValue) {
 class MockTextEditingController extends Mock implements TextEditingController {}
 
 class MockWordRepository extends Mock implements WordRepository {}
+
+class MockFile extends Mock implements File {}

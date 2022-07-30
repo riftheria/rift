@@ -2,8 +2,25 @@ import 'package:rift/data/dao/word_dao.dart';
 import 'package:rift/data/rift_database.dart';
 
 class FakeRemoteWordDao extends RemoteWordDao {
+  final _dummyWords = [
+    Word(id: 'Good'.hashCode, word: 'Good'),
+    Word(id: 'Is'.hashCode, word: 'Is'),
+    Word(id: 'A'.hashCode, word: 'A'),
+    Word(id: 'Nice'.hashCode, word: 'Nice'),
+    Word(id: 'Rift'.hashCode, word: 'Rift'),
+  ];
   @override
   Word? find(String word) {
-    return word == 'Invalid' ? null : Word(id: 0, word: word);
+    return word == 'Invalid' ? null : Word(id: word.hashCode, word: word);
+  }
+
+  @override
+  Future<List<Word>> findAll(List<String> queryWords) async {
+    final lowCaseQueryWords = queryWords.map((e) => e.toLowerCase());
+    final found = _dummyWords
+        .where(
+            (element) => lowCaseQueryWords.contains(element.word.toLowerCase()))
+        .toList();
+    return found;
   }
 }

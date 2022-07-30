@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rift/data/dao/fake_remote_word_dao.dart';
@@ -12,7 +14,7 @@ final localWordDaoProvider =
 
 final wordRepositoryProvider = Provider((ref) => WordRepository(
     localWordDao: ref.watch(localWordDaoProvider),
-    remoteWordsDao: ref.watch(remoteWordDaoProvider)));
+    remoteWordDao: ref.watch(remoteWordDaoProvider)));
 
 final wordViewModelProvider =
     Provider.autoDispose((ref) => WordViewModelProvider(ref));
@@ -34,5 +36,12 @@ class WordViewModelProvider extends ChangeNotifier {
       message = 'You have already added this word';
     }
     _ref.read(addedWordsMessageProvider.state).state = message;
+  }
+
+  Future<void> addToKnownWordsFromFile(File file) async {
+    final importedWords =
+        await _ref.read(wordRepositoryProvider).importWordsFromFile(file);
+    _ref.read(addedWordsMessageProvider.state).state =
+        '${importedWords.validWords.length} words added, ${importedWords.invalidWords.length} word not added';
   }
 }

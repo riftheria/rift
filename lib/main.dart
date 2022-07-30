@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rift/view/add_new_words.dart';
+import 'package:rift/view/add_new_words_page.dart';
 
 void main() {
   runApp(const ProviderScope(child: RiftApp()));

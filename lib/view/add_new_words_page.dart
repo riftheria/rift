@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rift/viewmodel/word_viewmodel.dart';
@@ -19,6 +22,21 @@ class AddNewWordsPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Rift'),
+        actions: [
+          IconButton(
+              onPressed: () async {
+                FilePickerResult? result =
+                    await FilePicker.platform.pickFiles();
+                String? pickedFilePath = result?.files.first.path;
+                if (pickedFilePath != null) {
+                  File pickedFile = File(pickedFilePath);
+                  ref
+                      .read(wordViewModelProvider)
+                      .addToKnownWordsFromFile(pickedFile);
+                }
+              },
+              icon: const Icon(Icons.file_open_rounded))
+        ],
       ),
       body: Container(
         padding: const EdgeInsets.all(8),
