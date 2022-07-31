@@ -127,7 +127,7 @@ void main() {
     final wordRepository =
         WordRepository(localWordDao: localDao, remoteWordDao: remoteDao);
     final validWords =
-        (await wordRepository.importWordsFromFile(mockFile)).validWords;
+        (await wordRepository.importWordsFromFile(mockFile)).addedWords;
     expect(validWords.length, 3);
   });
 
@@ -155,7 +155,7 @@ void main() {
     final wordRepository =
         WordRepository(localWordDao: localDao, remoteWordDao: remoteDao);
     final validWords =
-        (await wordRepository.importWordsFromFile(mockFile)).validWords;
+        (await wordRepository.importWordsFromFile(mockFile)).addedWords;
     expect(validWords.length, 5);
   });
 
@@ -212,8 +212,64 @@ void main() {
         WordRepository(localWordDao: localDao, remoteWordDao: remoteDao);
     final importedWords = await wordRepository.importWordsFromFile(mockFile);
 
-    expect(importedWords.validWords.length, 5);
+    expect(importedWords.addedWords.length, 5);
     expect(importedWords.invalidWords.length, 1);
+  });
+
+  test('Add to new words returns 5 valid and 1 invalid word', () async {
+    const text = 'Good is a nice rift InvalidWord';
+    final localDao = MockLocalWordDao();
+    when(() => localDao.findAll(any())).thenAnswer((_) => Future(() => []));
+    final remoteDao = MockRemoteWordDao();
+    when(() => remoteDao.findAll(any())).thenAnswer(
+      (_) => Future(
+        () => [
+          Word(id: 0, word: 'Good'),
+          Word(id: 1, word: 'Is'),
+          Word(id: 2, word: 'A'),
+          Word(id: 3, word: 'Nice'),
+          Word(id: 4, word: 'Rift'),
+        ],
+      ),
+    );
+    when(() => localDao.insertAll(any()))
+        .thenAnswer((invocation) => Future.value());
+    final wordRepository =
+        WordRepository(localWordDao: localDao, remoteWordDao: remoteDao);
+    final importedWords = await wordRepository.importWordsFromText(text);
+    expect(importedWords.addedWords.length, 5);
+    expect(importedWords.invalidWords.length, 1);
+  });
+
+  test('Add to new words returns 5 already added word and 1 invalid word',
+      () async {
+    const text = 'Good is a nice rift InvalidWord';
+    final localDao = MockLocalWordDao();
+    when(() => localDao.findAll(any())).thenAnswer(
+      (_) => Future(
+        () => [
+          Word(id: 0, word: 'Good'),
+          Word(id: 1, word: 'Is'),
+          Word(id: 2, word: 'A'),
+          Word(id: 3, word: 'Nice'),
+          Word(id: 4, word: 'Rift'),
+        ],
+      ),
+    );
+    final remoteDao = MockRemoteWordDao();
+    when(() => remoteDao.findAll(any())).thenAnswer(
+      (_) => Future(
+        () => [],
+      ),
+    );
+    when(() => localDao.insertAll(any()))
+        .thenAnswer((invocation) => Future.value());
+    final wordRepository =
+        WordRepository(localWordDao: localDao, remoteWordDao: remoteDao);
+    final importedWords = await wordRepository.importWordsFromText(text);
+    expect(importedWords.addedWords.length, 0);
+    expect(importedWords.invalidWords.length, 1);
+    expect(importedWords.alreadyAddedWords.length, 5);
   });
 }
 

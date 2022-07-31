@@ -39,24 +39,39 @@ class WordRepository {
     for (String line in lines) {
       words.addAll(line.trim().split(' '));
     }
-    final validWords = <Word>[];
+    return _importWords(words);
+  }
+
+  Future<ImportedWords> _importWords(List<String> newWords) async {
+    final newImportedWords = <Word>[];
+    final alreadyImportedWords = <String>[];
     final invalidWords = <String>[];
-    final wordsInLocal = await _localWordDao.findAll(words);
-    final wordsInLocalStringList = wordsInLocal.map((e) => e.word);
-    final wordsNotFoundInLocal = words
-        .where((element) => !wordsInLocalStringList.contains(element))
+    final wordsInLocal = await _localWordDao.findAll(newWords);
+    final wordsInLocalLowerCase = wordsInLocal.map((e) => e.word.toLowerCase());
+    var newWordsLowerCase = newWords.map((e) => e.toLowerCase());
+    final wordsNotFoundInLocal = newWordsLowerCase
+        .where((element) => !wordsInLocalLowerCase.contains(element))
         .toList();
     final wordsInRemote = await _remoteWordDao.findAll(wordsNotFoundInLocal);
-    final wordsInRemoteString = wordsInRemote.map((e) => e.word);
-    validWords.addAll(wordsInLocal);
-    validWords.addAll(wordsInRemote);
-    invalidWords.addAll(wordsInRemoteString
-        .where((element) => wordsNotFoundInLocal.contains(element)));
-    await _localWordDao.insertAll(validWords);
+    final wordsInRemoteLowerCase =
+        wordsInRemote.map((e) => e.word.toLowerCase());
+    newImportedWords.addAll(wordsInRemote);
+    await _localWordDao.insertAll(newImportedWords);
+    invalidWords.addAll(newWordsLowerCase.where((e) =>
+        !wordsInLocalLowerCase.contains(e) &&
+        !wordsInRemoteLowerCase.contains(e)));
+    alreadyImportedWords.addAll(
+        newWordsLowerCase.where((e) => wordsInLocalLowerCase.contains(e)));
     ImportedWords importedWords = ImportedWords(
-        validWords: validWords.map((e) => e.word).toList(),
-        invalidWords: invalidWords);
+        addedWords: newImportedWords.map((e) => e.word).toList(),
+        invalidWords: invalidWords,
+        alreadyAddedWords: alreadyImportedWords);
     return importedWords;
+  }
+
+  Future<ImportedWords> importWordsFromText(String text) async {
+    final words = text.split(' ');
+    return _importWords(words);
   }
 }
 
@@ -79,7 +94,12 @@ class WordAlreadyAddedException implements Exception {
 }
 
 class ImportedWords {
-  final List<String> validWords;
+  final List<String> addedWords;
   final List<String> invalidWords;
-  ImportedWords({required this.validWords, required this.invalidWords});
+  final List<String> alreadyAddedWords;
+  ImportedWords({
+    required this.addedWords,
+    required this.invalidWords,
+    required this.alreadyAddedWords,
+  });
 }

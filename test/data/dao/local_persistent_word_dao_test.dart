@@ -35,16 +35,16 @@ void main() {
   test('Find all the words inside a list', () async {
     final database = RiftDatabase.testDatabase();
     final wordDao = LocalPersistentWordDao(database);
-    final wordsInsideDatabase = [
-      Word(id: 0, word: 'First'),
-      Word(id: 1, word: 'Second'),
-      Word(id: 2, word: 'Third'),
-    ];
+    final words = ['First', 'Second', 'Third'];
+    final wordsToInsert =
+        words.map((e) => Word(id: e.toLowerCase().hashCode, word: e));
     final queryWords = ['First', 'Second', 'Third'];
-    for (Word word in wordsInsideDatabase) {
+    for (Word word in wordsToInsert) {
       await wordDao.insert(word);
     }
     final foundWords = await wordDao.findAll(queryWords);
     expect(foundWords.length, 3);
   });
+
+  test('Add to know words returns a ImportedWords object', () async {});
 }

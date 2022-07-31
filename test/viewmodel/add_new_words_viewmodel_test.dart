@@ -15,14 +15,18 @@ void main() {
     final mockWordRepository = MockWordRepository();
     when(() => mockWordRepository.find(any()))
         .thenAnswer((_) => Future(() => getWord(wordValue)));
-    when(() => mockWordRepository.addToKnownWords(wordValue))
-        .thenAnswer((_) => Future.value());
+    when(() => mockWordRepository.importWordsFromText(wordValue))
+        .thenAnswer((_) => Future(() => ImportedWords(
+              addedWords: ['Word'],
+              invalidWords: [],
+              alreadyAddedWords: [],
+            )));
     final container = ProviderContainer(overrides: [
       wordRepositoryProvider.overrideWithValue(mockWordRepository)
     ]);
     addTearDown(container.dispose);
     await container.read(wordViewModelProvider).addToKnownWords(wordValue);
-    expect(container.read(addedWordsMessageProvider), '1 new word added');
+    expect(container.read(addedWordsMessageProvider), '1 word added');
   });
 
   test('User enters a new word but notify the user that it is already added',
@@ -30,8 +34,12 @@ void main() {
     const wordValue = 'Word';
     final mockWordRepository = MockWordRepository();
 
-    when(() => mockWordRepository.addToKnownWords(wordValue))
-        .thenThrow(WordAlreadyAddedException(message: ''));
+    when(() => mockWordRepository.importWordsFromText(wordValue))
+        .thenAnswer((_) => Future(() => ImportedWords(
+              addedWords: [],
+              invalidWords: [],
+              alreadyAddedWords: ['Added'],
+            )));
     final container = ProviderContainer(overrides: [
       wordRepositoryProvider.overrideWithValue(mockWordRepository)
     ]);
@@ -44,8 +52,15 @@ void main() {
   test('User enters an invalid word and receives a notification', () async {
     const wordValue = 'Word';
     final mockWordRepository = MockWordRepository();
-    when(() => mockWordRepository.addToKnownWords(wordValue))
-        .thenThrow(InvalidWordException(message: ''));
+    when(() => mockWordRepository.importWordsFromText(wordValue)).thenAnswer(
+      (_) => Future(
+        () => ImportedWords(
+          addedWords: [],
+          invalidWords: ['Invalid'],
+          alreadyAddedWords: [],
+        ),
+      ),
+    );
     final container = ProviderContainer(overrides: [
       wordRepositoryProvider.overrideWithValue(mockWordRepository)
     ]);
@@ -61,15 +76,61 @@ void main() {
       wordRepositoryProvider.overrideWithValue(mockWordRepository)
     ]);
 
-    when(() => mockWordRepository.importWordsFromFile(any())).thenAnswer(
-        (invocation) => Future(() => ImportedWords(
-            validWords: ['First', 'Second', 'Line'],
-            invalidWords: ['iftgfs'])));
+    when(() => mockWordRepository.importWordsFromFile(any()))
+        .thenAnswer((invocation) => Future(() => ImportedWords(
+              addedWords: ['First', 'Second', 'Line'],
+              invalidWords: ['iftgfs'],
+              alreadyAddedWords: [],
+            )));
     await container
         .read(wordViewModelProvider)
         .addToKnownWordsFromFile(MockFile());
     expect(container.read(addedWordsMessageProvider),
-        '3 words added, 1 word not added');
+        '3 words added, 1 invalid word not added');
+  });
+
+  test('User enters a text and gets the valid and invalid words count',
+      () async {
+    final mockWordRepository = MockWordRepository();
+    final container = ProviderContainer(overrides: [
+      wordRepositoryProvider.overrideWithValue(mockWordRepository)
+    ]);
+    when(() => mockWordRepository.importWordsFromText(any())).thenAnswer(
+      (invocation) => Future(
+        () => ImportedWords(
+          addedWords: ['Some', 'Nice', 'Text'],
+          invalidWords: ['Keb'],
+          alreadyAddedWords: [],
+        ),
+      ),
+    );
+    await container
+        .read(wordViewModelProvider)
+        .addToKnownWords('Some nice text Keb');
+    expect(container.read(addedWordsMessageProvider),
+        '3 words added, 1 invalid word not added');
+  });
+
+  test('User enters a text and gets the invalid and already words count',
+      () async {
+    final mockWordRepository = MockWordRepository();
+    final container = ProviderContainer(overrides: [
+      wordRepositoryProvider.overrideWithValue(mockWordRepository)
+    ]);
+    when(() => mockWordRepository.importWordsFromText(any())).thenAnswer(
+      (invocation) => Future(
+        () => ImportedWords(
+          addedWords: [],
+          invalidWords: ['Keb'],
+          alreadyAddedWords: ['Some', 'Nice', 'Text'],
+        ),
+      ),
+    );
+    await container
+        .read(wordViewModelProvider)
+        .addToKnownWords('Some nice text Keb');
+    expect(container.read(addedWordsMessageProvider),
+        '1 invalid word not added, 3 words already added');
   });
 }
 

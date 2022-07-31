@@ -37,8 +37,9 @@ class LocalPersistentWordDao extends DatabaseAccessor<RiftDatabase>
 
   @override
   Future<List<Word>> findAll(List<String> queryWords) async {
+    final queryWordsHashes = queryWords.map((e) => e.toLowerCase().hashCode);
     final foundWords = await (select(words)
-          ..where((table) => table.word.isIn(queryWords)))
+          ..where((table) => table.id.isIn(queryWordsHashes)))
         .get();
     return foundWords;
   }
