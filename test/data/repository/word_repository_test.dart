@@ -106,9 +106,12 @@ void main() {
 
   test('New words are not in local and they have been found in remote',
       () async {
-    const fileContentLines = <String>['First line', 'Second line iftgfs'];
+    const fileContentLines = '''
+First line
+Second line
+''';
     final mockFile = MockFile();
-    when(() => mockFile.readAsLines())
+    when(() => mockFile.readAsString())
         .thenAnswer((invocation) => Future(() => fileContentLines));
     final localDao = MockLocalWordDao();
     when(() => localDao.findAll(any())).thenAnswer((_) => Future(() => []));
@@ -132,9 +135,9 @@ void main() {
   });
 
   test('Import words from file returns 5 valid words', () async {
-    const fileContentLines = <String>['Good is a nice rift'];
+    const fileContentLines = 'Good is a nice rift';
     final mockFile = MockFile();
-    when(() => mockFile.readAsLines())
+    when(() => mockFile.readAsString())
         .thenAnswer((invocation) => Future(() => fileContentLines));
     final localDao = MockLocalWordDao();
     when(() => localDao.findAll(any())).thenAnswer((_) => Future(() => []));
@@ -160,9 +163,9 @@ void main() {
   });
 
   test('Import words from file and save them in local', () async {
-    const fileContentLines = <String>['Good is a nice rift'];
+    const fileContentLines = 'Good is a nice rift';
     final mockFile = MockFile();
-    when(() => mockFile.readAsLines())
+    when(() => mockFile.readAsString())
         .thenAnswer((invocation) => Future(() => fileContentLines));
     final localDao = MockLocalWordDao();
     when(() => localDao.findAll(any())).thenAnswer((_) => Future(() => []));
@@ -188,9 +191,9 @@ void main() {
 
   test('Import words from file returns 5 valid words and 1 invalid word',
       () async {
-    const fileContentLines = <String>['Good is a nice rift InvalidWord'];
+    const fileContentLines = 'Good is a nice rift InvalidWord';
     final mockFile = MockFile();
-    when(() => mockFile.readAsLines())
+    when(() => mockFile.readAsString())
         .thenAnswer((invocation) => Future(() => fileContentLines));
     final localDao = MockLocalWordDao();
     when(() => localDao.findAll(any())).thenAnswer((_) => Future(() => []));
@@ -270,6 +273,71 @@ void main() {
     expect(importedWords.addedWords.length, 0);
     expect(importedWords.invalidWords.length, 1);
     expect(importedWords.alreadyAddedWords.length, 5);
+  });
+
+  test('Import words from subtitle file gets 13 added words, 1 invalid words',
+      () async {
+    const subtitleFileContent = '''
+1
+00:00:24,028 --> 00:00:26,118
+(FIRST LINE)
+
+2
+00:00:43,123 --> 00:00:47,147
+(SOMETHING IS HAPPENING)
+
+3
+00:01:05,603 --> 00:01:07,669
+(SOMEONE SCREAMING)
+
+4
+00:01:09,239 --> 00:01:11,307
+(DRAMATIC MUSIC)
+
+5
+00:01:13,243 --> 00:01:15,578
+(PANTING)
+
+6
+00:01:15,679 --> 00:01:17,747
+DIALOG
+
+7
+00:02:15,679 --> 00:02:17,747
+My name is Aleva
+''';
+    final localDao = MockLocalWordDao();
+    final remoteDao = MockRemoteWordDao();
+    final wordRepository =
+        WordRepository(localWordDao: localDao, remoteWordDao: remoteDao);
+    const wordsInRemote = [
+      'First',
+      'Line',
+      'Something',
+      'Is',
+      'Happening',
+      'Someone',
+      'Screaming',
+      'Dramatic',
+      'Music',
+      'Panting',
+      'Dialog',
+      'My',
+      'Name',
+    ];
+    final mockFile = MockFile();
+    when(() => mockFile.readAsString())
+        .thenAnswer((_) => Future(() => subtitleFileContent));
+    final wordsInRemoteResponse =
+        wordsInRemote.map((e) => Word(id: e.hashCode, word: e)).toList();
+    when(() => localDao.findAll(any())).thenAnswer((_) => Future(() => []));
+    when(() => remoteDao.findAll(any()))
+        .thenAnswer((invocation) => Future(() => wordsInRemoteResponse));
+    when(() => localDao.insertAll(any()))
+        .thenAnswer((_) => Future(() => Future.value()));
+    final importedWords = await wordRepository.importWordsFromFile(mockFile);
+    expect(importedWords.addedWords.length, 13);
+    expect(importedWords.invalidWords.length, 1);
   });
 }
 

@@ -2,7 +2,7 @@ import 'package:rift/data/dao/word_dao.dart';
 import 'package:rift/data/rift_database.dart';
 
 class FakeRemoteWordDao extends RemoteWordDao {
-  final _dummyDatabase = ['It', 'Is', 'A', 'Nice', 'Rift'].map(
+  final _dummyDatabase = ['It', 'Is', 'A', 'Nice', 'Rift', 'Own'].map(
     (e) => Word(
       id: e.toLowerCase().hashCode,
       word: e,

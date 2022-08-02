@@ -34,10 +34,15 @@ class WordRepository {
   }
 
   Future<ImportedWords> importWordsFromFile(File file) async {
-    final lines = await file.readAsLines();
     final words = <String>[];
-    for (String line in lines) {
-      words.addAll(line.trim().split(' '));
+    final content = await file.readAsString();
+    final wordsRegex = RegExp(r'([a-zA-Z])+');
+    final allMatches = wordsRegex.allMatches(content);
+    for (RegExpMatch match in allMatches) {
+      final word = match.group(0);
+      if (word != null) {
+        words.add(word);
+      }
     }
     return _importWords(words);
   }
