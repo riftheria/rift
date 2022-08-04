@@ -7,9 +7,12 @@ import 'package:mocktail/mocktail.dart';
 import 'package:rift/data/repository/word_repository.dart';
 import 'package:rift/data/rift_database.dart';
 import 'package:rift/viewmodel/word_viewmodel.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   registerFallbackValue(MockFile());
+  TestWidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences.setMockInitialValues({});
   test('User enters a new word and it is notified', () async {
     const wordValue = 'Word';
     final mockWordRepository = MockWordRepository();
@@ -131,6 +134,17 @@ void main() {
         .addToKnownWords('Some nice text Keb');
     expect(container.read(addedWordsMessageProvider),
         '1 invalid word not added, 3 words already added');
+  });
+
+  test('Import words from text file doesn\'t show a dialog the second time',
+      () async {
+    final container = ProviderContainer();
+    bool isFirstImportTextFile =
+        await container.read(wordViewModelProvider).isFirstImportTextFile();
+    expect(isFirstImportTextFile, isTrue);
+    isFirstImportTextFile =
+        await container.read(wordViewModelProvider).isFirstImportTextFile();
+    expect(isFirstImportTextFile, isFalse);
   });
 }
 

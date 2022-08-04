@@ -6,6 +6,7 @@ import 'package:rift/data/dao/fake_remote_word_dao.dart';
 import 'package:rift/data/dao/local_persistent_sql_word_dao.dart';
 import 'package:rift/data/repository/word_repository.dart';
 import 'package:rift/data/rift_database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final remoteWordDaoProvider = Provider((ref) => FakeRemoteWordDao());
 final riftDatabase = Provider((ref) => RiftDatabase());
@@ -80,4 +81,17 @@ class WordViewModelProvider extends ChangeNotifier {
     _ref.read(addedWordsMessageProvider.state).state =
         _buildAddedWordsMessage(importedWords);
   }
+
+  Future<bool> isFirstImportTextFile() async {
+    final SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+    bool firstTime = true;
+    firstTime = sharedPreferences.getBool('first_text_import') ?? true;
+    if (firstTime) {
+      sharedPreferences.setBool('first_text_import', false);
+    }
+    return firstTime;
+  }
 }
+
+enum DialogShowed { importTextFile }
