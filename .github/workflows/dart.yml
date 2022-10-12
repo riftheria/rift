@@ -46,6 +46,8 @@ jobs:
           SIGNING_KEY_ALIAS: ${{ secrets.ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.ALIAS_PASSWORD }}
           SIGNING_STORE_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      - name: Generate .env file
+        run: echo "RIFT_SERVER_BASE_URL=${{secrets.RIFT_SERVER_BASE_URL}}" > .env
       - name: Decode Keystore
         run: |
           echo "${{secrets.RELEASE_KEYSTORE}}" > release.keystore.asc
