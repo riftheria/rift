@@ -16,7 +16,7 @@ jobs:
         with:
           channel: "stable"
       - name: Generate .env file
-        run: echo "${{RIFT_SERVER_BASE_URL}}=${{secrets.RIFT_SERVER_BASE_URL}}" > .env
+        run: echo "RIFT_SERVER_BASE_URL=${{secrets.RIFT_SERVER_BASE_URL}}" > .env
       - name: Get dependencies
         run: flutter pub get
       - name: Run unit tests
