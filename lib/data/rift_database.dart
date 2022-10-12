@@ -8,11 +8,24 @@ import 'package:path_provider/path_provider.dart';
 part 'rift_database.g.dart';
 
 class Words extends Table {
-  IntColumn get id => integer()();
   TextColumn get word => text()();
+  TextColumn get phonetic => text().nullable()();
 
   @override
-  Set<Column>? get primaryKey => {id};
+  Set<Column>? get primaryKey => {word};
+}
+
+class Meanings extends Table {
+  IntColumn get id => integer()();
+  TextColumn get partOfSpeech => text()();
+  TextColumn get wordId => text().references(Words, #word)();
+}
+
+class Definitions extends Table {
+  IntColumn get id => integer()();
+  TextColumn get definition => text()();
+  TextColumn get example => text()();
+  IntColumn get meaningId => integer().references(Meanings, #id)();
 }
 
 @DriftDatabase(tables: [Words])

@@ -7,16 +7,16 @@ void main() {
     final database = RiftDatabase.testDatabase();
     final wordDao = LocalPersistentWordDao(database);
     await wordDao.insertAll([
-      Word(id: 'Rift'.hashCode, word: 'Rift'),
-      Word(id: 'Help'.hashCode, word: 'Help'),
-      Word(id: 'Nothing'.hashCode, word: 'Nothing'),
+      Word(word: 'Rift'),
+      Word(word: 'Help'),
+      Word(word: 'Nothing'),
     ]);
     final allWords = wordDao.getAll();
     expect((await allWords).length, 3);
   });
 
   test('Check if a word is saved to local', () async {
-    final word = Word(id: 0, word: 'Word');
+    final word = Word(word: 'Word');
     final database = RiftDatabase.testDatabase();
     final wordDao = LocalPersistentWordDao(database);
     await wordDao.insert(word);
@@ -26,7 +26,7 @@ void main() {
   test('Word could be retrieved from local source', () async {
     final database = RiftDatabase.testDatabase();
     final wordDao = LocalPersistentWordDao(database);
-    final word = Word(id: 0, word: 'Word');
+    final word = Word(word: 'Word');
     await wordDao.insert(word);
     final retrievedWord = wordDao.find(word.word);
     expect((await retrievedWord)?.word, word.word);
@@ -36,8 +36,7 @@ void main() {
     final database = RiftDatabase.testDatabase();
     final wordDao = LocalPersistentWordDao(database);
     final words = ['First', 'Second', 'Third'];
-    final wordsToInsert =
-        words.map((e) => Word(id: e.toLowerCase().hashCode, word: e));
+    final wordsToInsert = words.map((e) => Word(word: e));
     final queryWords = ['First', 'Second', 'Third'];
     for (Word word in wordsToInsert) {
       await wordDao.insert(word);

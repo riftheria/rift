@@ -151,9 +151,7 @@ void main() {
 int timesGetWordHaveBeenCalled = 0;
 
 Word? getWord(String wordValue) {
-  return timesGetWordHaveBeenCalled++ == 0
-      ? null
-      : Word(id: 0, word: wordValue);
+  return timesGetWordHaveBeenCalled++ == 0 ? null : Word(word: wordValue);
 }
 
 class MockTextEditingController extends Mock implements TextEditingController {}

@@ -7,7 +7,7 @@ import 'package:rift/data/rift_database.dart';
 
 void main() {
   setUpAll(() {
-    registerFallbackValue(Word(id: 0, word: 'Word'));
+    registerFallbackValue(Word(word: 'Word'));
   });
   test('Retrieve word in remote if local dao doesn\'t have the word', () async {
     const word = 'Word';
@@ -15,8 +15,7 @@ void main() {
     when(() => mockLocalWordDao.find(any()))
         .thenAnswer((_) => Future(() => null));
     final mockRemoteWordDao = MockRemoteWordDao();
-    when(() => mockRemoteWordDao.find(any()))
-        .thenReturn(Word(id: 0, word: word));
+    when(() => mockRemoteWordDao.find(any())).thenReturn(Word(word: word));
     final wordRepository = WordRepository(
       localWordDao: mockLocalWordDao,
       remoteWordDao: mockRemoteWordDao,
@@ -48,7 +47,7 @@ void main() {
       const word = 'Word';
       final mockLocalWordDao = MockLocalWordDao();
       when(() => mockLocalWordDao.find(any()))
-          .thenAnswer((_) => Future(() => Word(id: 0, word: word)));
+          .thenAnswer((_) => Future(() => Word(word: word)));
       final mockRemoteWordDao = MockRemoteWordDao();
       when(() => mockRemoteWordDao.find(any())).thenReturn(null);
       final wordRepository = WordRepository(
@@ -68,8 +67,7 @@ void main() {
     when(() => mockLocalWordDao.find(any()))
         .thenAnswer((_) => Future(() => null));
     final mockRemoteWordDao = MockRemoteWordDao();
-    when(() => mockRemoteWordDao.find(any()))
-        .thenReturn(Word(id: 0, word: word));
+    when(() => mockRemoteWordDao.find(any())).thenReturn(Word(word: word));
     final wordRepository = WordRepository(
         localWordDao: mockLocalWordDao, remoteWordDao: mockRemoteWordDao);
     await wordRepository.addToKnownWords(word);
@@ -95,7 +93,7 @@ void main() {
     const word = 'Word';
     final mockLocalWordDao = MockLocalWordDao();
     when(() => mockLocalWordDao.find(any()))
-        .thenAnswer((_) => Future(() => Word(id: 0, word: word)));
+        .thenAnswer((_) => Future(() => Word(word: word)));
     final mockRemoteWordDao = MockRemoteWordDao();
     when(() => mockRemoteWordDao.find(any())).thenReturn(null);
     final wordRepository = WordRepository(
@@ -119,9 +117,9 @@ Second line
     when(() => remoteDao.findAll(any())).thenAnswer(
       (_) => Future(
         () => [
-          Word(id: 0, word: 'First'),
-          Word(id: 1, word: 'Second'),
-          Word(id: 2, word: 'Line'),
+          Word(word: 'First'),
+          Word(word: 'Second'),
+          Word(word: 'Line'),
         ],
       ),
     );
@@ -145,11 +143,11 @@ Second line
     when(() => remoteDao.findAll(any())).thenAnswer(
       (_) => Future(
         () => [
-          Word(id: 0, word: 'Good'),
-          Word(id: 1, word: 'Is'),
-          Word(id: 2, word: 'A'),
-          Word(id: 3, word: 'Nice'),
-          Word(id: 4, word: 'Rift'),
+          Word(word: 'Good'),
+          Word(word: 'Is'),
+          Word(word: 'A'),
+          Word(word: 'Nice'),
+          Word(word: 'Rift'),
         ],
       ),
     );
@@ -173,11 +171,11 @@ Second line
     when(() => remoteDao.findAll(any())).thenAnswer(
       (_) => Future(
         () => [
-          Word(id: 0, word: 'Good'),
-          Word(id: 1, word: 'Is'),
-          Word(id: 2, word: 'A'),
-          Word(id: 3, word: 'Nice'),
-          Word(id: 4, word: 'Rift'),
+          Word(word: 'Good'),
+          Word(word: 'Is'),
+          Word(word: 'A'),
+          Word(word: 'Nice'),
+          Word(word: 'Rift'),
         ],
       ),
     );
@@ -201,11 +199,11 @@ Second line
     when(() => remoteDao.findAll(any())).thenAnswer(
       (_) => Future(
         () => [
-          Word(id: 0, word: 'Good'),
-          Word(id: 1, word: 'Is'),
-          Word(id: 2, word: 'A'),
-          Word(id: 3, word: 'Nice'),
-          Word(id: 4, word: 'Rift'),
+          Word(word: 'Good'),
+          Word(word: 'Is'),
+          Word(word: 'A'),
+          Word(word: 'Nice'),
+          Word(word: 'Rift'),
         ],
       ),
     );
@@ -227,11 +225,11 @@ Second line
     when(() => remoteDao.findAll(any())).thenAnswer(
       (_) => Future(
         () => [
-          Word(id: 0, word: 'Good'),
-          Word(id: 1, word: 'Is'),
-          Word(id: 2, word: 'A'),
-          Word(id: 3, word: 'Nice'),
-          Word(id: 4, word: 'Rift'),
+          Word(word: 'Good'),
+          Word(word: 'Is'),
+          Word(word: 'A'),
+          Word(word: 'Nice'),
+          Word(word: 'Rift'),
         ],
       ),
     );
@@ -251,11 +249,11 @@ Second line
     when(() => localDao.findAll(any())).thenAnswer(
       (_) => Future(
         () => [
-          Word(id: 0, word: 'Good'),
-          Word(id: 1, word: 'Is'),
-          Word(id: 2, word: 'A'),
-          Word(id: 3, word: 'Nice'),
-          Word(id: 4, word: 'Rift'),
+          Word(word: 'Good'),
+          Word(word: 'Is'),
+          Word(word: 'A'),
+          Word(word: 'Nice'),
+          Word(word: 'Rift'),
         ],
       ),
     );
@@ -329,7 +327,7 @@ My name is Aleva
     when(() => mockFile.readAsString())
         .thenAnswer((_) => Future(() => subtitleFileContent));
     final wordsInRemoteResponse =
-        wordsInRemote.map((e) => Word(id: e.hashCode, word: e)).toList();
+        wordsInRemote.map((e) => Word(word: e)).toList();
     when(() => localDao.findAll(any())).thenAnswer((_) => Future(() => []));
     when(() => remoteDao.findAll(any()))
         .thenAnswer((invocation) => Future(() => wordsInRemoteResponse));
