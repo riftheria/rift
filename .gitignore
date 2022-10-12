@@ -43,5 +43,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+#Firebase
 android/app/google-services.json
 android/keystore.properties
+
+#Environment variables
+*.env
