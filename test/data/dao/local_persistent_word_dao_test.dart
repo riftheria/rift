@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rift/data/dao/local_persistent_sql_word_dao.dart';
+import 'package:rift/data/models/word.dart';
 import 'package:rift/data/rift_database.dart';
 
 void main() {

@@ -1,4 +1,4 @@
-import 'package:rift/data/rift_database.dart';
+import 'package:rift/data/models/word.dart';
 
 abstract class LocalWordDao {
   void insert(Word word);

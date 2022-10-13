@@ -3,51 +3,6 @@
 part of 'remote_word_dao.dart';
 
 // **************************************************************************
-// JsonSerializableGenerator
-// **************************************************************************
-
-ServerMeaning _$ServerMeaningFromJson(Map<String, dynamic> json) =>
-    ServerMeaning(
-      partOfSpeech: json['partOfSpeech'] as String?,
-      definitions: (json['definitions'] as List<dynamic>?)
-          ?.map((e) => ServerDefinition.fromJson(e as Map<String, dynamic>))
-          .toList(),
-    );
-
-Map<String, dynamic> _$ServerMeaningToJson(ServerMeaning instance) =>
-    <String, dynamic>{
-      'partOfSpeech': instance.partOfSpeech,
-      'definitions': instance.definitions,
-    };
-
-ServerWord _$ServerWordFromJson(Map<String, dynamic> json) => ServerWord(
-      word: json['word'] as String?,
-      phonetic: json['phonetic'] as String?,
-      meanings: (json['meanings'] as List<dynamic>?)
-          ?.map((e) => ServerMeaning.fromJson(e as Map<String, dynamic>))
-          .toList(),
-    );
-
-Map<String, dynamic> _$ServerWordToJson(ServerWord instance) =>
-    <String, dynamic>{
-      'word': instance.word,
-      'phonetic': instance.phonetic,
-      'meanings': instance.meanings,
-    };
-
-ServerDefinition _$ServerDefinitionFromJson(Map<String, dynamic> json) =>
-    ServerDefinition(
-      definition: json['definition'] as String?,
-      example: json['example'] as String?,
-    );
-
-Map<String, dynamic> _$ServerDefinitionToJson(ServerDefinition instance) =>
-    <String, dynamic>{
-      'definition': instance.definition,
-      'example': instance.example,
-    };
-
-// **************************************************************************
 // RetrofitGenerator
 // **************************************************************************
 
@@ -64,14 +19,14 @@ class _RiftRemoteWordDao implements RiftRemoteWordDao {
   String? baseUrl;
 
   @override
-  Future<List<ServerWord>> findWithWordNames(queries) async {
+  Future<List<Word>> findWithWordNames(queries) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     queryParameters.addAll(queries);
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
-    final _result = await _dio
-        .fetch<List<dynamic>>(_setStreamType<List<ServerWord>>(Options(
+    final _result =
+        await _dio.fetch<List<dynamic>>(_setStreamType<List<Word>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
@@ -84,7 +39,7 @@ class _RiftRemoteWordDao implements RiftRemoteWordDao {
             )
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     var value = _result.data!
-        .map((dynamic i) => ServerWord.fromJson(i as Map<String, dynamic>))
+        .map((dynamic i) => Word.fromJson(i as Map<String, dynamic>))
         .toList();
     return value;
   }

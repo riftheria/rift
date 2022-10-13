@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:rift/data/dao/word_dao.dart';
+import 'package:rift/data/models/word.dart';
 import 'package:rift/data/rift_database.dart';
 
 part 'local_persistent_sql_word_dao.g.dart';

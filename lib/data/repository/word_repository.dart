@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:rift/data/dao/word_dao.dart';
+import 'package:rift/data/models/word.dart';
 import 'package:rift/data/rift_database.dart';
 
 class WordRepository {
@@ -59,7 +60,7 @@ class WordRepository {
         .toList();
     final wordsInRemote = await _remoteWordDao.findAll(wordsNotFoundInLocal);
     final wordsInRemoteLowerCase =
-        wordsInRemote.map((e) => e.word.toLowerCase());
+        wordsInRemote.map((e) => e.word?.toLowerCase());
     newImportedWords.addAll(wordsInRemote);
     await _localWordDao.insertAll(newImportedWords);
     invalidWords.addAll(newWordsLowerCase.where((e) =>

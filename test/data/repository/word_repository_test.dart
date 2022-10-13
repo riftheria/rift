@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rift/data/dao/word_dao.dart';
+import 'package:rift/data/models/word.dart';
 import 'package:rift/data/repository/word_repository.dart';
 import 'package:rift/data/rift_database.dart';
 

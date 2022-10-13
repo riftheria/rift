@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:rift/data/dao/remote_word_dao.dart';
 import 'package:dio/dio.dart';
+import 'package:rift/data/models/word.dart';
 
 Dio setupDioResponse() {
   Dio dio = Dio(BaseOptions());
@@ -11,8 +12,7 @@ Dio setupDioResponse() {
       '/dictionary',
       data: {},
       queryParameters: {'words[0]': 'word'},
-      (server) =>
-          server.reply(200, [ServerWord(word: 'word', phonetic: '/wɜːd/')]));
+      (server) => server.reply(200, [Word(word: 'word', phonetic: '/wɜːd/')]));
   return dio;
 }
 
@@ -24,7 +24,7 @@ void main() {
     Map<String, String> wordQueryNames = <String, String>{};
     wordQueryNames['words[0]'] = 'word';
     expect(remoteWordDao.findWithWordNames(wordQueryNames),
-        isA<Future<List<ServerWord>>>());
+        isA<Future<List<Word>>>());
   });
 
   test("Get a list with one item from remote", () async {
