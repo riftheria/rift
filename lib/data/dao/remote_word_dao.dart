@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:rift/data/models/word.dart';
 part 'remote_word_dao.g.dart';
 

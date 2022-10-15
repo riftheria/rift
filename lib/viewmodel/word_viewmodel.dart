@@ -1,14 +1,21 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rift/data/dao/fake_remote_word_dao.dart';
+import 'package:rift/constants.dart';
 import 'package:rift/data/dao/local_persistent_sql_word_dao.dart';
+import 'package:rift/data/dao/remote_word_dao.dart';
+import 'package:rift/data/dao/rift_remote_word_dao_adapter.dart';
 import 'package:rift/data/repository/word_repository.dart';
 import 'package:rift/data/rift_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final remoteWordDaoProvider = Provider((ref) => FakeRemoteWordDao());
+final dioProvider = Provider((ref) => Dio());
+final riftRemoteWordDao = Provider((ref) =>
+    RiftRemoteWordDao(ref.watch(dioProvider), baseUrl: riftServerBaseUrl));
+final remoteWordDaoProvider = Provider(
+    (ref) => RiftRemoteWordADaoAdapter(dao: ref.watch(riftRemoteWordDao)));
 final riftDatabase = Provider((ref) => RiftDatabase());
 final localWordDaoProvider =
     Provider((ref) => LocalPersistentWordDao(ref.watch(riftDatabase)));

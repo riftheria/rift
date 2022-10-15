@@ -4,7 +4,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:rift/data/dao/word_dao.dart';
 import 'package:rift/data/models/word.dart';
 import 'package:rift/data/repository/word_repository.dart';
-import 'package:rift/data/rift_database.dart';
 
 void main() {
   setUpAll(() {
@@ -16,7 +15,8 @@ void main() {
     when(() => mockLocalWordDao.find(any()))
         .thenAnswer((_) => Future(() => null));
     final mockRemoteWordDao = MockRemoteWordDao();
-    when(() => mockRemoteWordDao.find(any())).thenReturn(Word(word: word));
+    when(() => mockRemoteWordDao.find(any()))
+        .thenAnswer((_) => Future(() => Word(word: word)));
     final wordRepository = WordRepository(
       localWordDao: mockLocalWordDao,
       remoteWordDao: mockRemoteWordDao,
@@ -33,7 +33,8 @@ void main() {
     when(() => mockLocalWordDao.find(any()))
         .thenAnswer((_) => Future(() => null));
     final mockRemoteWordDao = MockRemoteWordDao();
-    when(() => mockRemoteWordDao.find(any())).thenReturn(null);
+    when(() => mockRemoteWordDao.find(any()))
+        .thenAnswer((_) => Future((() => null)));
     final wordRepository = WordRepository(
       localWordDao: mockLocalWordDao,
       remoteWordDao: mockRemoteWordDao,
@@ -50,7 +51,8 @@ void main() {
       when(() => mockLocalWordDao.find(any()))
           .thenAnswer((_) => Future(() => Word(word: word)));
       final mockRemoteWordDao = MockRemoteWordDao();
-      when(() => mockRemoteWordDao.find(any())).thenReturn(null);
+      when(() => mockRemoteWordDao.find(any()))
+          .thenAnswer((_) => Future((() => null)));
       final wordRepository = WordRepository(
           localWordDao: mockLocalWordDao, remoteWordDao: mockRemoteWordDao);
       try {
@@ -68,7 +70,8 @@ void main() {
     when(() => mockLocalWordDao.find(any()))
         .thenAnswer((_) => Future(() => null));
     final mockRemoteWordDao = MockRemoteWordDao();
-    when(() => mockRemoteWordDao.find(any())).thenReturn(Word(word: word));
+    when(() => mockRemoteWordDao.find(any()))
+        .thenAnswer((_) => Future((() => Word(word: word))));
     final wordRepository = WordRepository(
         localWordDao: mockLocalWordDao, remoteWordDao: mockRemoteWordDao);
     await wordRepository.addToKnownWords(word);
@@ -83,7 +86,8 @@ void main() {
     when(() => mockLocalWordDao.find(any()))
         .thenAnswer((_) => Future(() => null));
     final mockRemoteWordDao = MockRemoteWordDao();
-    when(() => mockRemoteWordDao.find(any())).thenReturn(null);
+    when(() => mockRemoteWordDao.find(any()))
+        .thenAnswer((_) => Future((() => null)));
     final wordRepository = WordRepository(
         localWordDao: mockLocalWordDao, remoteWordDao: mockRemoteWordDao);
     expect(() => wordRepository.addToKnownWords(word),
@@ -96,7 +100,8 @@ void main() {
     when(() => mockLocalWordDao.find(any()))
         .thenAnswer((_) => Future(() => Word(word: word)));
     final mockRemoteWordDao = MockRemoteWordDao();
-    when(() => mockRemoteWordDao.find(any())).thenReturn(null);
+    when(() => mockRemoteWordDao.find(any()))
+        .thenAnswer((_) => Future((() => null)));
     final wordRepository = WordRepository(
         localWordDao: mockLocalWordDao, remoteWordDao: mockRemoteWordDao);
     expect(() => wordRepository.addToKnownWords(word),

@@ -8,6 +8,6 @@ abstract class LocalWordDao {
 }
 
 abstract class RemoteWordDao {
-  Word? find(String word);
+  Future<Word?> find(String word);
   Future<List<Word>> findAll(List<String> queryWords);
 }

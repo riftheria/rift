@@ -6,7 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:rift/data/models/word.dart';
 import 'package:rift/data/repository/word_repository.dart';
-import 'package:rift/data/rift_database.dart';
 import 'package:rift/viewmodel/word_viewmodel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

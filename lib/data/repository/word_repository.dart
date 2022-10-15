@@ -1,8 +1,6 @@
 import 'dart:io';
-
 import 'package:rift/data/dao/word_dao.dart';
 import 'package:rift/data/models/word.dart';
-import 'package:rift/data/rift_database.dart';
 
 class WordRepository {
   final LocalWordDao _localWordDao;
@@ -17,7 +15,7 @@ class WordRepository {
   Future<void> addToKnownWords(String newWord) async {
     Word? newWordData = await _localWordDao.find(newWord);
     if (newWordData == null) {
-      newWordData = _remoteWordDao.find(newWord);
+      newWordData = await _remoteWordDao.find(newWord);
       if (newWordData != null) {
         _localWordDao.insert(newWordData);
       } else {
@@ -30,7 +28,7 @@ class WordRepository {
 
   Future<Word?> find(String word) async {
     Word? retrievedWord =
-        await _localWordDao.find(word) ?? _remoteWordDao.find(word);
+        await _localWordDao.find(word) ?? await _remoteWordDao.find(word);
     return retrievedWord;
   }
 
@@ -60,7 +58,7 @@ class WordRepository {
         .toList();
     final wordsInRemote = await _remoteWordDao.findAll(wordsNotFoundInLocal);
     final wordsInRemoteLowerCase =
-        wordsInRemote.map((e) => e.word?.toLowerCase());
+        wordsInRemote.map((e) => e.word.toLowerCase());
     newImportedWords.addAll(wordsInRemote);
     await _localWordDao.insertAll(newImportedWords);
     invalidWords.addAll(newWordsLowerCase.where((e) =>
