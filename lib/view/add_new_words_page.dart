@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:rift/view/guess_the_word_definition_game.dart';
 import 'package:rift/viewmodel/word_viewmodel.dart';
 
 class AddNewWordsPage extends ConsumerWidget {
@@ -88,6 +89,14 @@ class AddNewWordsPage extends ConsumerWidget {
             },
             child: const Text('Add to new words'),
           ),
+          ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const GuessTheWordGame()));
+              },
+              child: const Text('Game'))
         ]),
       ),
     );

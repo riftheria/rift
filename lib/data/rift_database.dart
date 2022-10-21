@@ -24,6 +24,9 @@ class Meanings extends Table {
   IntColumn get id => integer()();
   TextColumn get partOfSpeech => text()();
   TextColumn get wordId => text().references(Words, #word)();
+
+  @override
+  Set<Column>? get primaryKey => {id};
 }
 
 @UseRowClass(Definition)
@@ -32,6 +35,9 @@ class Definitions extends Table {
   TextColumn get definition => text().nullable()();
   TextColumn get example => text().nullable()();
   IntColumn get meaningId => integer().references(Meanings, #id)();
+
+  @override
+  Set<Column>? get primaryKey => {id};
 }
 
 @DriftDatabase(tables: [Words, Meanings, Definitions])

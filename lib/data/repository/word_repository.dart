@@ -1,16 +1,28 @@
 import 'dart:io';
+import 'package:rift/data/dao/local_persistent_sql_word_dao.dart';
+import 'package:rift/data/dao/meaning_dao.dart';
+import 'package:rift/data/dao/definition_dao.dart';
 import 'package:rift/data/dao/word_dao.dart';
+import 'package:rift/data/dataclasses/complete_word.dart';
+import 'package:rift/data/models/definition.dart';
+import 'package:rift/data/models/meaning.dart';
 import 'package:rift/data/models/word.dart';
 
 class WordRepository {
-  final LocalWordDao _localWordDao;
+  final LocalPersistentWordDao _localWordDao;
   final RemoteWordDao _remoteWordDao;
+  final MeaningDao _meaningDao;
+  final DefinitionDao _definitionDao;
 
   WordRepository({
-    required LocalWordDao localWordDao,
+    required LocalPersistentWordDao localWordDao,
     required RemoteWordDao remoteWordDao,
+    required MeaningDao meaningDao,
+    required DefinitionDao definitionDao,
   })  : _localWordDao = localWordDao,
-        _remoteWordDao = remoteWordDao;
+        _remoteWordDao = remoteWordDao,
+        _meaningDao = meaningDao,
+        _definitionDao = definitionDao;
 
   Future<void> addToKnownWords(String newWord) async {
     Word? newWordData = await _localWordDao.find(newWord);
@@ -61,6 +73,16 @@ class WordRepository {
         wordsInRemote.map((e) => e.word.toLowerCase());
     newImportedWords.addAll(wordsInRemote);
     await _localWordDao.insertAll(newImportedWords);
+    final meanings = <Meaning>[];
+    final definitions = <Definition>[];
+    for (Word wordInRemote in wordsInRemote) {
+      meanings.addAll(wordInRemote.meanings ?? []);
+    }
+    for (Meaning meaning in meanings) {
+      definitions.addAll(meaning.definitions ?? []);
+    }
+    await _meaningDao.insertAll(meanings);
+    await _definitionDao.insertAll(definitions);
     invalidWords.addAll(newWordsLowerCase.where((e) =>
         !wordsInLocalLowerCase.contains(e) &&
         !wordsInRemoteLowerCase.contains(e)));
@@ -76,6 +98,14 @@ class WordRepository {
   Future<ImportedWords> importWordsFromText(String text) async {
     final words = text.split(' ');
     return _importWords(words);
+  }
+
+  Future<Word?> getRandomWords() async {
+    return await _localWordDao.find('word');
+  }
+
+  Future<List<CompleteWord>> retrieveCompleteWords() async {
+    return await _localWordDao.findThreeCompleteWords();
   }
 }
 

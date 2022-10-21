@@ -1,11 +1,12 @@
 import 'package:drift/drift.dart';
+import 'package:rift/data/dataclasses/complete_word.dart';
 import 'package:rift/data/dao/word_dao.dart';
 import 'package:rift/data/models/word.dart';
 import 'package:rift/data/rift_database.dart';
 
 part 'local_persistent_sql_word_dao.g.dart';
 
-@DriftAccessor(tables: [Words])
+@DriftAccessor(tables: [Words, Definitions, Meanings])
 class LocalPersistentWordDao extends DatabaseAccessor<RiftDatabase>
     with _$LocalPersistentWordDaoMixin, LocalWordDao {
   LocalPersistentWordDao(RiftDatabase database) : super(database);
@@ -18,7 +19,7 @@ class LocalPersistentWordDao extends DatabaseAccessor<RiftDatabase>
   Future<void> insertAll(List<Word> newWords) async {
     await batch(
       (batch) => {
-        batch.insertAll(words, newWords),
+        batch.insertAllOnConflictUpdate(words, newWords),
       },
     );
   }
@@ -42,5 +43,26 @@ class LocalPersistentWordDao extends DatabaseAccessor<RiftDatabase>
           ..where((table) => table.word.isIn(queryWords)))
         .get();
     return foundWords;
+  }
+
+  Future<List<CompleteWord>> findThreeCompleteWords() async {
+    final query = select(definitions).join(
+      [
+        leftOuterJoin(meanings, meanings.id.equalsExp(definitions.meaningId)),
+        leftOuterJoin(words, words.word.equalsExp(meanings.wordId)),
+      ],
+    )
+      ..groupBy([words.word])
+      ..orderBy([OrderingTerm.random()])
+      ..limit(3);
+    final result = await query
+        .map(
+          (row) => CompleteWord(
+              word: row.readTable(words),
+              meaning: row.readTable(meanings),
+              definition: row.readTable(definitions)),
+        )
+        .get();
+    return result;
   }
 }

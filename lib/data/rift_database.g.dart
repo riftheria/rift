@@ -125,11 +125,10 @@ class MeaningsCompanion extends UpdateCompanion<Meaning> {
     this.wordId = const Value.absent(),
   });
   MeaningsCompanion.insert({
-    required int id,
+    this.id = const Value.absent(),
     required String partOfSpeech,
     required String wordId,
-  })  : id = Value(id),
-        partOfSpeech = Value(partOfSpeech),
+  })  : partOfSpeech = Value(partOfSpeech),
         wordId = Value(wordId);
   static Insertable<Meaning> custom({
     Expression<int>? id,
@@ -187,7 +186,7 @@ class $MeaningsTable extends Meanings with TableInfo<$MeaningsTable, Meaning> {
   @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      type: const IntType(), requiredDuringInsert: true);
+      type: const IntType(), requiredDuringInsert: false);
   final VerificationMeta _partOfSpeechMeta =
       const VerificationMeta('partOfSpeech');
   @override
@@ -214,8 +213,6 @@ class $MeaningsTable extends Meanings with TableInfo<$MeaningsTable, Meaning> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
     }
     if (data.containsKey('part_of_speech')) {
       context.handle(
@@ -235,13 +232,17 @@ class $MeaningsTable extends Meanings with TableInfo<$MeaningsTable, Meaning> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Meaning map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Meaning(
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
       partOfSpeech: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}part_of_speech'])!,
+      wordId: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}word_id'])!,
     );
   }
 
@@ -263,12 +264,11 @@ class DefinitionsCompanion extends UpdateCompanion<Definition> {
     this.meaningId = const Value.absent(),
   });
   DefinitionsCompanion.insert({
-    required int id,
+    this.id = const Value.absent(),
     this.definition = const Value.absent(),
     this.example = const Value.absent(),
     required int meaningId,
-  })  : id = Value(id),
-        meaningId = Value(meaningId);
+  }) : meaningId = Value(meaningId);
   static Insertable<Definition> custom({
     Expression<int>? id,
     Expression<String?>? definition,
@@ -336,7 +336,7 @@ class $DefinitionsTable extends Definitions
   @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      type: const IntType(), requiredDuringInsert: true);
+      type: const IntType(), requiredDuringInsert: false);
   final VerificationMeta _definitionMeta = const VerificationMeta('definition');
   @override
   late final GeneratedColumn<String?> definition = GeneratedColumn<String?>(
@@ -367,8 +367,6 @@ class $DefinitionsTable extends Definitions
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
     }
     if (data.containsKey('definition')) {
       context.handle(
@@ -390,11 +388,15 @@ class $DefinitionsTable extends Definitions
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Definition map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Definition(
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      meaningId: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}meaning_id'])!,
       definition: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}definition']),
       example: const StringType()

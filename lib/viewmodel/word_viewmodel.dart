@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -5,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rift/constants.dart';
 import 'package:rift/data/dao/local_persistent_sql_word_dao.dart';
+import 'package:rift/data/dao/meaning_dao.dart';
+import 'package:rift/data/dao/definition_dao.dart';
 import 'package:rift/data/dao/remote_word_dao.dart';
 import 'package:rift/data/dao/rift_remote_word_dao_adapter.dart';
 import 'package:rift/data/repository/word_repository.dart';
@@ -19,20 +22,29 @@ final remoteWordDaoProvider = Provider(
 final riftDatabase = Provider((ref) => RiftDatabase());
 final localWordDaoProvider =
     Provider((ref) => LocalPersistentWordDao(ref.watch(riftDatabase)));
-
-final wordRepositoryProvider = Provider((ref) => WordRepository(
+final meaningDaoProvider =
+    Provider((ref) => MeaningDao(ref.watch(riftDatabase)));
+final definitionDaoProvider =
+    Provider((ref) => DefinitionDao(ref.watch(riftDatabase)));
+final wordRepositoryProvider = Provider(
+  (ref) => WordRepository(
     localWordDao: ref.watch(localWordDaoProvider),
-    remoteWordDao: ref.watch(remoteWordDaoProvider)));
+    remoteWordDao: ref.watch(remoteWordDaoProvider),
+    meaningDao: ref.watch(meaningDaoProvider),
+    definitionDao: ref.watch(definitionDaoProvider),
+  ),
+);
 
-final wordViewModelProvider =
-    Provider.autoDispose((ref) => WordViewModelProvider(ref));
+final wordViewModelProvider = Provider((ref) => WordViewModelProvider(ref));
 
 final addedWordsMessageProvider = StateProvider<String?>((ref) => null);
 final newWordControllerProvider = Provider((ref) => TextEditingController());
 
 class WordViewModelProvider extends ChangeNotifier {
   final Ref _ref;
+
   WordViewModelProvider(this._ref);
+
   Future<void> addToKnownWords(String text) async {
     ImportedWords importedWords =
         await _ref.read(wordRepositoryProvider).importWordsFromText(text);
@@ -46,6 +58,7 @@ class WordViewModelProvider extends ChangeNotifier {
     final validWordsCount = importedWords.addedWords.length;
     final invalidWordsCount = importedWords.invalidWords.length;
     final wordsAlreadyAddedCount = importedWords.alreadyAddedWords.length;
+
     if (validWordsCount == 0 &&
         invalidWordsCount == 0 &&
         wordsAlreadyAddedCount == 1) {

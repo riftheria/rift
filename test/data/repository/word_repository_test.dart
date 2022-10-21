@@ -1,9 +1,32 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:rift/data/dao/definition_dao.dart';
+import 'package:rift/data/dao/local_persistent_sql_word_dao.dart';
+import 'package:rift/data/dao/meaning_dao.dart';
 import 'package:rift/data/dao/word_dao.dart';
+import 'package:rift/data/models/definition.dart';
+import 'package:rift/data/models/meaning.dart';
 import 'package:rift/data/models/word.dart';
 import 'package:rift/data/repository/word_repository.dart';
+
+WordRepository _setupWordRepository(
+  LocalPersistentWordDao localWordDao,
+  RemoteWordDao remoteWordDao,
+  MeaningDao? meaningDao, {
+  DefinitionDao? definitionDao,
+}) {
+  definitionDao = definitionDao ?? MockDefinitionDao();
+  when(() => definitionDao?.insertAll(any())).thenAnswer((_) => Future.value());
+  meaningDao = meaningDao ?? MockMeaningDao();
+  when(() => meaningDao?.insertAll(any())).thenAnswer((_) => Future.value());
+  return WordRepository(
+    localWordDao: localWordDao,
+    remoteWordDao: remoteWordDao,
+    meaningDao: meaningDao,
+    definitionDao: definitionDao,
+  );
+}
 
 void main() {
   setUpAll(() {
@@ -17,9 +40,11 @@ void main() {
     final mockRemoteWordDao = MockRemoteWordDao();
     when(() => mockRemoteWordDao.find(any()))
         .thenAnswer((_) => Future(() => Word(word: word)));
-    final wordRepository = WordRepository(
-      localWordDao: mockLocalWordDao,
-      remoteWordDao: mockRemoteWordDao,
+    final mockMeaningDao = MockMeaningDao();
+    final wordRepository = _setupWordRepository(
+      mockLocalWordDao,
+      mockRemoteWordDao,
+      mockMeaningDao,
     );
     final retrievedWord = await wordRepository.find(word);
     verify(() => mockLocalWordDao.find(any())).called(1);
@@ -35,9 +60,11 @@ void main() {
     final mockRemoteWordDao = MockRemoteWordDao();
     when(() => mockRemoteWordDao.find(any()))
         .thenAnswer((_) => Future((() => null)));
-    final wordRepository = WordRepository(
-      localWordDao: mockLocalWordDao,
-      remoteWordDao: mockRemoteWordDao,
+    final mockMeaningDao = MockMeaningDao();
+    final wordRepository = _setupWordRepository(
+      mockLocalWordDao,
+      mockRemoteWordDao,
+      mockMeaningDao,
     );
     final retrievedWord = await wordRepository.find(word);
     expect(retrievedWord, isNull);
@@ -53,8 +80,12 @@ void main() {
       final mockRemoteWordDao = MockRemoteWordDao();
       when(() => mockRemoteWordDao.find(any()))
           .thenAnswer((_) => Future((() => null)));
-      final wordRepository = WordRepository(
-          localWordDao: mockLocalWordDao, remoteWordDao: mockRemoteWordDao);
+      final mockMeaningDao = MockMeaningDao();
+      final wordRepository = _setupWordRepository(
+        mockLocalWordDao,
+        mockRemoteWordDao,
+        mockMeaningDao,
+      );
       try {
         await wordRepository.addToKnownWords(word);
       } catch (_) {}
@@ -72,8 +103,14 @@ void main() {
     final mockRemoteWordDao = MockRemoteWordDao();
     when(() => mockRemoteWordDao.find(any()))
         .thenAnswer((_) => Future((() => Word(word: word))));
-    final wordRepository = WordRepository(
-        localWordDao: mockLocalWordDao, remoteWordDao: mockRemoteWordDao);
+    when(() => mockLocalWordDao.insert(any()))
+        .thenAnswer((_) => Future.value());
+    final mockMeaningDao = MockMeaningDao();
+    final wordRepository = _setupWordRepository(
+      mockLocalWordDao,
+      mockRemoteWordDao,
+      mockMeaningDao,
+    );
     await wordRepository.addToKnownWords(word);
     verify(() => mockLocalWordDao.find(any())).called(1);
     verify(() => mockRemoteWordDao.find(any())).called(1);
@@ -88,8 +125,12 @@ void main() {
     final mockRemoteWordDao = MockRemoteWordDao();
     when(() => mockRemoteWordDao.find(any()))
         .thenAnswer((_) => Future((() => null)));
-    final wordRepository = WordRepository(
-        localWordDao: mockLocalWordDao, remoteWordDao: mockRemoteWordDao);
+    final mockMeaningDao = MockMeaningDao();
+    final wordRepository = _setupWordRepository(
+      mockLocalWordDao,
+      mockRemoteWordDao,
+      mockMeaningDao,
+    );
     expect(() => wordRepository.addToKnownWords(word),
         throwsA(isA<InvalidWordException>()));
   });
@@ -102,8 +143,12 @@ void main() {
     final mockRemoteWordDao = MockRemoteWordDao();
     when(() => mockRemoteWordDao.find(any()))
         .thenAnswer((_) => Future((() => null)));
-    final wordRepository = WordRepository(
-        localWordDao: mockLocalWordDao, remoteWordDao: mockRemoteWordDao);
+    final mockMeaningDao = MockMeaningDao();
+    final wordRepository = _setupWordRepository(
+      mockLocalWordDao,
+      mockRemoteWordDao,
+      mockMeaningDao,
+    );
     expect(() => wordRepository.addToKnownWords(word),
         throwsA(isA<WordAlreadyAddedException>()));
   });
@@ -117,10 +162,11 @@ Second line
     final mockFile = MockFile();
     when(() => mockFile.readAsString())
         .thenAnswer((invocation) => Future(() => fileContentLines));
-    final localDao = MockLocalWordDao();
-    when(() => localDao.findAll(any())).thenAnswer((_) => Future(() => []));
-    final remoteDao = MockRemoteWordDao();
-    when(() => remoteDao.findAll(any())).thenAnswer(
+    final mockLocalWordDao = MockLocalWordDao();
+    when(() => mockLocalWordDao.findAll(any()))
+        .thenAnswer((_) => Future(() => []));
+    final mockRemoteWordDao = MockRemoteWordDao();
+    when(() => mockRemoteWordDao.findAll(any())).thenAnswer(
       (_) => Future(
         () => [
           Word(word: 'First'),
@@ -129,10 +175,14 @@ Second line
         ],
       ),
     );
-    when(() => localDao.insertAll(any()))
+    when(() => mockLocalWordDao.insertAll(any()))
         .thenAnswer((invocation) => Future.value());
-    final wordRepository =
-        WordRepository(localWordDao: localDao, remoteWordDao: remoteDao);
+    final mockMeaningDao = MockMeaningDao();
+    final wordRepository = _setupWordRepository(
+      mockLocalWordDao,
+      mockRemoteWordDao,
+      mockMeaningDao,
+    );
     final validWords =
         (await wordRepository.importWordsFromFile(mockFile)).addedWords;
     expect(validWords.length, 3);
@@ -143,10 +193,11 @@ Second line
     final mockFile = MockFile();
     when(() => mockFile.readAsString())
         .thenAnswer((invocation) => Future(() => fileContentLines));
-    final localDao = MockLocalWordDao();
-    when(() => localDao.findAll(any())).thenAnswer((_) => Future(() => []));
-    final remoteDao = MockRemoteWordDao();
-    when(() => remoteDao.findAll(any())).thenAnswer(
+    final mockLocalWordDao = MockLocalWordDao();
+    when(() => mockLocalWordDao.findAll(any()))
+        .thenAnswer((_) => Future(() => []));
+    final mockRemoteWordDao = MockRemoteWordDao();
+    when(() => mockRemoteWordDao.findAll(any())).thenAnswer(
       (_) => Future(
         () => [
           Word(word: 'Good'),
@@ -157,10 +208,14 @@ Second line
         ],
       ),
     );
-    when(() => localDao.insertAll(any()))
+    when(() => mockLocalWordDao.insertAll(any()))
         .thenAnswer((invocation) => Future.value());
-    final wordRepository =
-        WordRepository(localWordDao: localDao, remoteWordDao: remoteDao);
+    final mockMeaningDao = MockMeaningDao();
+    final wordRepository = _setupWordRepository(
+      mockLocalWordDao,
+      mockRemoteWordDao,
+      mockMeaningDao,
+    );
     final validWords =
         (await wordRepository.importWordsFromFile(mockFile)).addedWords;
     expect(validWords.length, 5);
@@ -171,10 +226,11 @@ Second line
     final mockFile = MockFile();
     when(() => mockFile.readAsString())
         .thenAnswer((invocation) => Future(() => fileContentLines));
-    final localDao = MockLocalWordDao();
-    when(() => localDao.findAll(any())).thenAnswer((_) => Future(() => []));
-    final remoteDao = MockRemoteWordDao();
-    when(() => remoteDao.findAll(any())).thenAnswer(
+    final mockLocalWordDao = MockLocalWordDao();
+    when(() => mockLocalWordDao.findAll(any()))
+        .thenAnswer((_) => Future(() => []));
+    final mockRemoteWordDao = MockRemoteWordDao();
+    when(() => mockRemoteWordDao.findAll(any())).thenAnswer(
       (_) => Future(
         () => [
           Word(word: 'Good'),
@@ -185,12 +241,16 @@ Second line
         ],
       ),
     );
-    when(() => localDao.insertAll(any()))
+    when(() => mockLocalWordDao.insertAll(any()))
         .thenAnswer((invocation) => Future.value());
-    final wordRepository =
-        WordRepository(localWordDao: localDao, remoteWordDao: remoteDao);
+    final mockMeaningDao = MockMeaningDao();
+    final wordRepository = _setupWordRepository(
+      mockLocalWordDao,
+      mockRemoteWordDao,
+      mockMeaningDao,
+    );
     await wordRepository.importWordsFromFile(mockFile);
-    verify(() => localDao.insertAll(any())).called(1);
+    verify(() => mockLocalWordDao.insertAll(any())).called(1);
   });
 
   test('Import words from file returns 5 valid words and 1 invalid word',
@@ -199,10 +259,11 @@ Second line
     final mockFile = MockFile();
     when(() => mockFile.readAsString())
         .thenAnswer((invocation) => Future(() => fileContentLines));
-    final localDao = MockLocalWordDao();
-    when(() => localDao.findAll(any())).thenAnswer((_) => Future(() => []));
-    final remoteDao = MockRemoteWordDao();
-    when(() => remoteDao.findAll(any())).thenAnswer(
+    final mockLocalWordDao = MockLocalWordDao();
+    when(() => mockLocalWordDao.findAll(any()))
+        .thenAnswer((_) => Future(() => []));
+    final mockRemoteWordDao = MockRemoteWordDao();
+    when(() => mockRemoteWordDao.findAll(any())).thenAnswer(
       (_) => Future(
         () => [
           Word(word: 'Good'),
@@ -213,10 +274,14 @@ Second line
         ],
       ),
     );
-    when(() => localDao.insertAll(any()))
+    when(() => mockLocalWordDao.insertAll(any()))
         .thenAnswer((invocation) => Future.value());
-    final wordRepository =
-        WordRepository(localWordDao: localDao, remoteWordDao: remoteDao);
+    final mockMeaningDao = MockMeaningDao();
+    final wordRepository = _setupWordRepository(
+      mockLocalWordDao,
+      mockRemoteWordDao,
+      mockMeaningDao,
+    );
     final importedWords = await wordRepository.importWordsFromFile(mockFile);
 
     expect(importedWords.addedWords.length, 5);
@@ -225,10 +290,11 @@ Second line
 
   test('Add to new words returns 5 valid and 1 invalid word', () async {
     const text = 'Good is a nice rift InvalidWord';
-    final localDao = MockLocalWordDao();
-    when(() => localDao.findAll(any())).thenAnswer((_) => Future(() => []));
-    final remoteDao = MockRemoteWordDao();
-    when(() => remoteDao.findAll(any())).thenAnswer(
+    final mockLocalWordDao = MockLocalWordDao();
+    when(() => mockLocalWordDao.findAll(any()))
+        .thenAnswer((_) => Future(() => []));
+    final mockRemoteWordDao = MockRemoteWordDao();
+    when(() => mockRemoteWordDao.findAll(any())).thenAnswer(
       (_) => Future(
         () => [
           Word(word: 'Good'),
@@ -239,10 +305,14 @@ Second line
         ],
       ),
     );
-    when(() => localDao.insertAll(any()))
+    when(() => mockLocalWordDao.insertAll(any()))
         .thenAnswer((invocation) => Future.value());
-    final wordRepository =
-        WordRepository(localWordDao: localDao, remoteWordDao: remoteDao);
+    final mockMeaningDao = MockMeaningDao();
+    final wordRepository = _setupWordRepository(
+      mockLocalWordDao,
+      mockRemoteWordDao,
+      mockMeaningDao,
+    );
     final importedWords = await wordRepository.importWordsFromText(text);
     expect(importedWords.addedWords.length, 5);
     expect(importedWords.invalidWords.length, 1);
@@ -251,8 +321,8 @@ Second line
   test('Add to new words returns 5 already added word and 1 invalid word',
       () async {
     const text = 'Good is a nice rift InvalidWord';
-    final localDao = MockLocalWordDao();
-    when(() => localDao.findAll(any())).thenAnswer(
+    final mockLocalWordDao = MockLocalWordDao();
+    when(() => mockLocalWordDao.findAll(any())).thenAnswer(
       (_) => Future(
         () => [
           Word(word: 'Good'),
@@ -263,16 +333,20 @@ Second line
         ],
       ),
     );
-    final remoteDao = MockRemoteWordDao();
-    when(() => remoteDao.findAll(any())).thenAnswer(
+    final mockRemoteWordDao = MockRemoteWordDao();
+    when(() => mockRemoteWordDao.findAll(any())).thenAnswer(
       (_) => Future(
         () => [],
       ),
     );
-    when(() => localDao.insertAll(any()))
+    when(() => mockLocalWordDao.insertAll(any()))
         .thenAnswer((invocation) => Future.value());
-    final wordRepository =
-        WordRepository(localWordDao: localDao, remoteWordDao: remoteDao);
+    final mockMeaningDao = MockMeaningDao();
+    final wordRepository = _setupWordRepository(
+      mockLocalWordDao,
+      mockRemoteWordDao,
+      mockMeaningDao,
+    );
     final importedWords = await wordRepository.importWordsFromText(text);
     expect(importedWords.addedWords.length, 0);
     expect(importedWords.invalidWords.length, 1);
@@ -310,10 +384,14 @@ DIALOG
 00:02:15,679 --> 00:02:17,747
 My name is Aleva
 ''';
-    final localDao = MockLocalWordDao();
-    final remoteDao = MockRemoteWordDao();
-    final wordRepository =
-        WordRepository(localWordDao: localDao, remoteWordDao: remoteDao);
+    final mockLocalWordDao = MockLocalWordDao();
+    final mockRemoteWordDao = MockRemoteWordDao();
+    final mockMeaningDao = MockMeaningDao();
+    final wordRepository = _setupWordRepository(
+      mockLocalWordDao,
+      mockRemoteWordDao,
+      mockMeaningDao,
+    );
     const wordsInRemote = [
       'First',
       'Line',
@@ -334,19 +412,55 @@ My name is Aleva
         .thenAnswer((_) => Future(() => subtitleFileContent));
     final wordsInRemoteResponse =
         wordsInRemote.map((e) => Word(word: e)).toList();
-    when(() => localDao.findAll(any())).thenAnswer((_) => Future(() => []));
-    when(() => remoteDao.findAll(any()))
+    when(() => mockLocalWordDao.findAll(any()))
+        .thenAnswer((_) => Future(() => []));
+    when(() => mockRemoteWordDao.findAll(any()))
         .thenAnswer((invocation) => Future(() => wordsInRemoteResponse));
-    when(() => localDao.insertAll(any()))
+    when(() => mockLocalWordDao.insertAll(any()))
         .thenAnswer((_) => Future(() => Future.value()));
     final importedWords = await wordRepository.importWordsFromFile(mockFile);
     expect(importedWords.addedWords.length, 13);
     expect(importedWords.invalidWords.length, 1);
   });
+
+  test('Add meanings and  to database', () async {
+    final localWordDao = MockLocalWordDao();
+    const text = 'Test';
+    final remoteWordDao = MockRemoteWordDao();
+    final meaningDao = MockMeaningDao();
+    final definitionDao = MockDefinitionDao();
+    final answer = [
+      Word(word: 'test', meanings: [
+        Meaning(id: 0, partOfSpeech: 'verb', wordId: 'test', definitions: [
+          Definition(id: 0, definition: 'Def', example: 'Example', meaningId: 0)
+        ])
+      ])
+    ];
+    final wordRepository = WordRepository(
+        localWordDao: localWordDao,
+        remoteWordDao: remoteWordDao,
+        meaningDao: meaningDao,
+        definitionDao: definitionDao);
+    when(() => remoteWordDao.findAll(any()))
+        .thenAnswer((_) => Future(() => answer));
+    when(() => localWordDao.findAll(any())).thenAnswer((_) => Future(() => []));
+    when(() => localWordDao.insertAll(any())).thenAnswer((_) => Future.value());
+    when(() => meaningDao.insertAll(any())).thenAnswer((_) => Future.value());
+    when(() => definitionDao.insertAll(any()))
+        .thenAnswer((_) => Future.value());
+    await wordRepository.importWordsFromText(text);
+    verify(() => localWordDao.insertAll(any())).called(1);
+    verify(() => meaningDao.insertAll(any())).called(1);
+    verify(() => definitionDao.insertAll(any())).called(1);
+  });
 }
 
-class MockLocalWordDao extends Mock implements LocalWordDao {}
+class MockLocalWordDao extends Mock implements LocalPersistentWordDao {}
 
 class MockRemoteWordDao extends Mock implements RemoteWordDao {}
 
 class MockFile extends Mock implements File {}
+
+class MockDefinitionDao extends Mock implements DefinitionDao {}
+
+class MockMeaningDao extends Mock implements MeaningDao {}

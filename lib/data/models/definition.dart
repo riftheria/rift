@@ -5,10 +5,16 @@ part 'definition.g.dart';
 
 @JsonSerializable()
 class Definition implements Insertable<Definition> {
+  int id;
+  int meaningId;
   String? definition;
   String? example;
 
-  Definition({this.definition, this.example});
+  Definition(
+      {required this.id,
+      required this.meaningId,
+      this.definition,
+      this.example});
   factory Definition.fromJson(Map<String, dynamic> json) =>
       _$DefinitionFromJson(json);
   Map<String, dynamic> toJson() => _$DefinitionToJson(this);
@@ -16,8 +22,15 @@ class Definition implements Insertable<Definition> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     return DefinitionsCompanion(
+      id: Value(id),
       definition: Value(definition),
       example: Value(example),
+      meaningId: Value(meaningId),
     ).toColumns(nullToAbsent);
+  }
+
+  @override
+  String toString() {
+    return 'id: $id, meaningId: $meaningId';
   }
 }

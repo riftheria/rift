@@ -19,4 +19,9 @@ class Word implements Insertable<Word> {
     return WordsCompanion(word: Value(word), phonetic: Value(phonetic))
         .toColumns(nullToAbsent);
   }
+
+  @override
+  String toString() {
+    return 'word: $word, phonetic: $phonetic';
+  }
 }
