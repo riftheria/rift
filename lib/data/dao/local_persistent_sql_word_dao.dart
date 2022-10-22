@@ -6,7 +6,9 @@ import 'package:rift/data/rift_database.dart';
 
 part 'local_persistent_sql_word_dao.g.dart';
 
-@DriftAccessor(tables: [Words, Definitions, Meanings])
+@DriftAccessor(
+    tables: [Words, Definitions, Meanings],
+    queries: {'wordCount': 'SELECT COUNT(*) FROM words'})
 class LocalPersistentWordDao extends DatabaseAccessor<RiftDatabase>
     with _$LocalPersistentWordDaoMixin, LocalWordDao {
   LocalPersistentWordDao(RiftDatabase database) : super(database);
@@ -64,5 +66,9 @@ class LocalPersistentWordDao extends DatabaseAccessor<RiftDatabase>
         )
         .get();
     return result;
+  }
+
+  Stream<int> getWordCountStream() {
+    return wordCount().watchSingle();
   }
 }

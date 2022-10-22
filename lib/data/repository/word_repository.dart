@@ -107,6 +107,10 @@ class WordRepository {
   Future<List<CompleteWord>> retrieveCompleteWords() async {
     return await _localWordDao.findThreeCompleteWords();
   }
+
+  Stream<int> getWordCountStream() {
+    return _localWordDao.getWordCountStream();
+  }
 }
 
 class InvalidWordException implements Exception {

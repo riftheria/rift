@@ -12,17 +12,23 @@ final remainingTimePercentageProvider = StateProvider((ref) => -1.0);
 final guessTheDefinitionViewmodelProvider =
     Provider((ref) => GuessTheDefinitionGameViewmodel(ref));
 
+final wordsCountProvider = StreamProvider(
+  (ref) => ref.read(wordRepositoryProvider).getWordCountStream(),
+);
+
 class GuessTheDefinitionGameViewmodel extends ChangeNotifier {
   Timer? answerCountdownTimer;
   final int waitingTime;
   final Ref _ref;
   GuessTheDefinitionGameViewmodel(this._ref, {this.waitingTime = 15});
 
-  Future refreshQuiz() async {
+  Future refreshQuiz({int correctDefinitionPosition = 0}) async {
     final completeWords =
         await _ref.read(wordRepositoryProvider).retrieveCompleteWords();
+    completeWords.shuffle();
     _ref.read(completeWordsListProvider.state).state = completeWords;
-    _ref.read(correctCompleteWordProvider.state).state = completeWords[0];
+    _ref.read(correctCompleteWordProvider.state).state =
+        completeWords[correctDefinitionPosition];
     _ref.read(gameStateProvider.state).state = GameState.onGoing;
     _ref.read(remainingTimePercentageProvider.state).state = 100.0;
     if (answerCountdownTimer != null) {

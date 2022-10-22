@@ -129,4 +129,14 @@ void main() {
       isNot(equals(completeWords[2].word.word)),
     );
   });
+
+  test('Get word count emits count incrementally', () async {
+    final database = RiftDatabase.testDatabase();
+    final wordsDao = LocalPersistentWordDao(database);
+    final stream = wordsDao.getWordCountStream();
+    wordsDao.insert(Word(word: 'word', phonetic: 'pho'));
+    wordsDao.insert(Word(word: 'rift', phonetic: 'pho'));
+
+    expect(stream, emitsAnyOf([1, 2]));
+  });
 }

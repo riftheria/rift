@@ -453,6 +453,23 @@ My name is Aleva
     verify(() => meaningDao.insertAll(any())).called(1);
     verify(() => definitionDao.insertAll(any())).called(1);
   });
+
+  test('Get words count', () async {
+    final localWordDao = MockLocalWordDao();
+    final remoteWordDao = MockRemoteWordDao();
+    final meaningDao = MockMeaningDao();
+    final definitionDao = MockDefinitionDao();
+    final wordRepository = WordRepository(
+        localWordDao: localWordDao,
+        remoteWordDao: remoteWordDao,
+        meaningDao: meaningDao,
+        definitionDao: definitionDao);
+    final elements = [1, 2, 3, 4, 5];
+    Stream<int> totalWordCount = Stream<int>.fromIterable(elements);
+    when(() => localWordDao.getWordCountStream())
+        .thenAnswer((_) => totalWordCount);
+    expect(wordRepository.getWordCountStream(), emitsInOrder(elements));
+  });
 }
 
 class MockLocalWordDao extends Mock implements LocalPersistentWordDao {}

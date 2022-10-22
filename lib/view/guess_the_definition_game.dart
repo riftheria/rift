@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -15,11 +17,12 @@ class GuessTheDefinitionGame extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final gameState = ref.watch(gameStateProvider);
     if (gameState == GameState.iddle) {
-      ref.read(guessTheDefinitionViewmodelProvider).refreshQuiz();
+      _refreshGame(ref);
     }
     final completeWords = ref.watch(completeWordsListProvider);
     final correctWord = ref.watch(correctCompleteWordProvider);
     final selectedDefinitionId = ref.watch(selectedDefinitionIdProvider);
+    final wordCount = ref.watch(wordsCountProvider).value ?? 0;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Guess the definition'),
@@ -36,7 +39,7 @@ class GuessTheDefinitionGame extends ConsumerWidget {
               icon: const Icon(Icons.add))
         ],
       ),
-      body: completeWords.length < 3
+      body: wordCount < 3
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -84,7 +87,9 @@ class GuessTheDefinitionGame extends ConsumerWidget {
   }
 
   void _refreshGame(WidgetRef ref) {
-    ref.read(guessTheDefinitionViewmodelProvider).refreshQuiz();
+    ref
+        .read(guessTheDefinitionViewmodelProvider)
+        .refreshQuiz(correctDefinitionPosition: Random().nextInt(3));
     ref.read(selectedDefinitionIdProvider.state).state = -1;
   }
 
