@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rift/data/dataclasses/complete_word.dart';
 import 'package:rift/viewmodel/guess_the_definition_game_viewmodel.dart';
-import 'package:rift/viewmodel/word_viewmodel.dart';
 
 class WordOptionView extends StatelessWidget {
   final Function(int selectedDefinition) callback;

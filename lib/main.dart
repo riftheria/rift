@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rift/view/add_new_words_page.dart';
+import 'package:rift/view/guess_the_definition_game.dart';
 
 void main() async {
   await dotenv.load(fileName: '.env');
@@ -20,7 +20,7 @@ class _RiftAppState extends State<RiftApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
-      home: const AddNewWordsPage(),
+      home: const GuessTheDefinitionGame(),
     );
   }
 }

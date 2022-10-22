@@ -16,7 +16,7 @@ class GuessTheDefinitionGameViewmodel extends ChangeNotifier {
   Timer? answerCountdownTimer;
   final int waitingTime;
   final Ref _ref;
-  GuessTheDefinitionGameViewmodel(Ref this._ref, {this.waitingTime = 15});
+  GuessTheDefinitionGameViewmodel(this._ref, {this.waitingTime = 15});
 
   Future refreshQuiz() async {
     final completeWords =

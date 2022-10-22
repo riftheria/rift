@@ -4,7 +4,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:rift/view/guess_the_word_definition_game.dart';
 import 'package:rift/viewmodel/word_viewmodel.dart';
 
 class AddNewWordsPage extends ConsumerWidget {
@@ -78,8 +77,9 @@ class AddNewWordsPage extends ConsumerWidget {
         child: Column(children: [
           TextField(
             controller: ref.read(newWordControllerProvider),
-            decoration: const InputDecoration(hintText: 'Enter a new word'),
-            minLines: 10,
+            decoration: const InputDecoration(
+                hintText: 'Enter new words', border: OutlineInputBorder()),
+            minLines: 1,
             maxLines: 10,
           ),
           ElevatedButton(
@@ -87,16 +87,12 @@ class AddNewWordsPage extends ConsumerWidget {
               final newWord = ref.read(newWordControllerProvider).text;
               ref.read(wordViewModelProvider).addToKnownWords(newWord);
             },
-            child: const Text('Add to new words'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+            ),
+            child: const Text('Add to new words',
+                style: TextStyle(color: Colors.white)),
           ),
-          ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const GuessTheWordGame()));
-              },
-              child: const Text('Game'))
         ]),
       ),
     );
