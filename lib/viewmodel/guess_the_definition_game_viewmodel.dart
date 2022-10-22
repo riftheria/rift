@@ -25,7 +25,6 @@ class GuessTheDefinitionGameViewmodel extends ChangeNotifier {
   Future refreshQuiz({int correctDefinitionPosition = 0}) async {
     final completeWords =
         await _ref.read(wordRepositoryProvider).retrieveCompleteWords();
-    completeWords.shuffle();
     _ref.read(completeWordsListProvider.state).state = completeWords;
     _ref.read(correctCompleteWordProvider.state).state =
         completeWords[correctDefinitionPosition];

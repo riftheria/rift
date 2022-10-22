@@ -76,7 +76,9 @@ void main() {
     final container = ProviderContainer(overrides: [
       wordRepositoryProvider.overrideWithValue(mockWordRepository)
     ]);
-    await container.read(guessTheDefinitionViewmodelProvider).refreshQuiz();
+    await container
+        .read(guessTheDefinitionViewmodelProvider)
+        .refreshQuiz(correctDefinitionPosition: 0);
     await container
         .read(guessTheDefinitionViewmodelProvider)
         .verifyDefinitionSelection(0);
