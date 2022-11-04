@@ -9,6 +9,6 @@ class DefinitionDao extends DatabaseAccessor<RiftDatabase>
   DefinitionDao(RiftDatabase database) : super(database);
 
   Future<void> insertAll(List<Definition> newDefinitions) async {
-    batch((batch) => batch.insertAll(definitions, newDefinitions));
+    batch((batch) => batch.insertAllOnConflictUpdate(definitions, newDefinitions));
   }
 }

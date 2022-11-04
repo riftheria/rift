@@ -161,4 +161,18 @@ void main() {
     final secondPercentage = container.read(remainingTimePercentageProvider);
     expect(firstPercentage, secondPercentage);
   });
+
+    test('Verify if the game state doesn\'t change if there isn\'t enough data ', () async {
+    final mockWordRepository = MockWordRepository();
+    when(() => mockWordRepository.retrieveCompleteWords())
+        .thenAnswer((_) => Future(() => Future(
+              () => [],
+            )));
+    final container = ProviderContainer(overrides: [
+      wordRepositoryProvider.overrideWithValue(mockWordRepository)
+    ]);
+    expect(container.read(gameStateProvider), GameState.iddle);
+    await container.read(guessTheDefinitionViewmodelProvider).refreshQuiz();
+    expect(container.read(gameStateProvider), GameState.iddle);
+  });
 }
